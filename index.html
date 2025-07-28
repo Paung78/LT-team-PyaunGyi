@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ai Perdition V2.2</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #8b5cf6;
+      --primary-dark: #4f46e5;
+      --secondary: #06b6d4;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #06b6d4;
+      
+      --bg-primary: #0f0f23;
+      --bg-secondary: #1a1a3a;
+      --bg-tertiary: #242458;
+      --bg-card: #1e1e3f;
+      --bg-surface: #2a2a5a;
+      
+      --text-primary: #ffffff;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-accent: #f1f5f9;
+      
+      --border-primary: #334155;
+      --border-secondary: #475569;
+      --border-accent: #64748b;
+      
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+      --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
+      
+      --glow-primary: 0 0 20px rgba(99, 102, 241, 0.5);
+      --glow-secondary: 0 0 20px rgba(6, 182, 212, 0.5);
+      --glow-accent: 0 0 20px rgba(245, 158, 11, 0.5);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-2xl: 24px;
+      
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.3s ease;
+      --transition-slow: 0.5s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .floating-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .particle:nth-child(2n) {
+      background: var(--secondary);
+      animation-delay: -2s;
+      animation-duration: 8s;
+    }
+    
+    .particle:nth-child(3n) {
+      background: var(--accent);
+      animation-delay: -4s;
+      animation-duration: 10s;
+    }
+    
+    @keyframes float {
+      0%, 100% { 
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.3;
+      }
+      50% { 
+        transform: translateY(-20px) rotate(180deg);
+        opacity: 0.6;
+      }
+    }
+    
+    .main-container {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+    
+    .card {
+      background: linear-gradient(145deg, 
+        rgba(30, 30, 63, 0.95) 0%, 
+        rgba(36, 36, 88, 0.95) 50%, 
+        rgba(42, 42, 90, 0.95) 100%
+      );
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-2xl);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-2xl), var(--glow-primary);
+      position: relative;
+      overflow: hidden;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: cardEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary), 
+        var(--secondary), 
+        var(--accent), 
+        transparent
+      );
+      animation: shimmer 3s linear infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes cardEnter {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    /* Premium Badge */
+    .premium-badge {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--warning) 100%);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--glow-accent);
+      text-transform: uppercase;
+      z-index: 10;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* Logo Section */
+    .logo-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+    
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 90px;
+      height: 90px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: 50%;
+      margin-bottom: 1.5rem;
+      position: relative;
+      box-shadow: var(--glow-primary);
+      animation: logoRotate 8s linear infinite;
+    }
+    
+    .logo-container::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+      z-index: -1;
+      animation: logoRotate 10s linear infinite reverse;
+    }
+    
+    .logo-container i {
+      font-size: 2.5rem;
+      color: white;
+      z-index: 1;
+    }
+    
+    @keyframes logoRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .main-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    
+    /* Login Page Styles */
+    #login-page {
+      display: block;
+    }
+    
+    #prediction-page {
+      display: none;
+    }
+    
+    .input-group {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    
+    .input-label {
+      position: absolute;
+      top: -12px;
+      left: 1rem;
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      z-index: 1;
+      border: 1px solid var(--border-primary);
+    }
+    
+    .premium-input {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      background: rgba(15, 15, 35, 0.8);
+      border: 2px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      letter-spacing: 1px;
+      transition: var(--transition-normal);
+      backdrop-filter: blur(10px);
+    }
+    
+    .premium-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), var(--glow-primary);
+      transform: translateY(-2px);
+    }
+    
+    .premium-button {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), var(--glow-primary);
+    }
+    
+    .premium-button:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-xl), var(--glow-primary);
+    }
+    
+    .premium-button:active {
+      transform: translateY(-1px);
+    }
+    
+    .premium-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: 0.6s;
+    }
+    
+    .premium-button:hover::before {
+      left: 100%;
+    }
+    
+    .button-group {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .social-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border: 2px solid var(--border-secondary);
+      border-radius: var(--radius-lg);
+      background: rgba(30, 30, 63, 0.5);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition-normal);
+      backdrop-filter: blur(10px);
+    }
+    
+    .social-button:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .social-button.telegram {
+      border-color: #0088cc;
+    }
+    
+    .social-button.telegram:hover {
+      border-color: #0088cc;
+      background: rgba(0, 136, 204, 0.1);
+      box-shadow: 0 0 20px rgba(0, 136, 204, 0.3);
+    }
+    
+    .social-button.key-button {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+    }
+    
+    .social-button.key-button:hover {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+      box-shadow: var(--glow-accent);
+    }
+    
+    /* Timer Display */
+    .timer-display {
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--success);
+      letter-spacing: 1px;
+      animation: timerGlow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes timerGlow {
+      from { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+      to { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+    }
+    
+    .success-content {
+      display: none;
+      margin-top: 2rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      backdrop-filter: blur(10px);
+      animation: successGlow 3s ease-in-out infinite;
+    }
+    
+    @keyframes successGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
+    }
+    
+    .success-icon {
+      font-size: 3rem;
+      color: var(--success);
+      margin-bottom: 1rem;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    
+    /* Prediction Page Styles */
+    .nav-section {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 0.5rem;
+      background: rgba(15, 15, 35, 0.6);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-primary);
+    }
+    
+    .nav-button {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-normal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-button.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      box-shadow: var(--glow-primary);
+    }
+    
+    .nav-button:not(.active):hover {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--primary);
+    }
+    
+    /* Premium Boxes */
+    .premium-box {
+      background: linear-gradient(145deg, 
+        rgba(30, 30, 63, 0.8) 0%, 
+        rgba(36, 36, 88, 0.8) 100%
+      );
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      backdrop-filter: blur(15px);
+      overflow: hidden;
+      animation: boxGlow 4s ease-in-out infinite alternate;
+    }
+    
+    @keyframes boxGlow {
+      from { 
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+      to { 
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+        border-color: rgba(99, 102, 241, 0.5);
+      }
+    }
+    
+    .premium-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        var(--primary), 
+        var(--secondary), 
+        var(--accent), 
+        var(--primary)
+      );
+      animation: gradientShift 3s linear infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .premium-label {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-surface));
+      color: var(--primary);
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 2px solid var(--primary);
+      white-space: nowrap;
+      box-shadow: var(--glow-primary);
+    }
+    
+    .period-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-accent);
+      text-align: center;
+      letter-spacing: 3px;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+      word-break: break-all;
+      margin-top: 1rem;
+    }
+    
+    /* Time Container */
+    .time-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+    
+    .clock-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+      letter-spacing: 2px;
+    }
+    
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(99, 102, 241, 0.1));
+      border: 2px solid rgba(6, 182, 212, 0.3);
+      border-radius: 50px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--secondary);
+      animation: timerPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes timerPulse {
+      0%, 100% { 
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 0 25px rgba(6, 182, 212, 0.5);
+        transform: scale(1.02);
+      }
+    }
+    
+    /* AI Prediction Result */
+    .prediction-container {
+      position: relative;
+      margin-bottom: 2.5rem;
+    }
+    
+    .prediction-result {
+      padding: 3rem 2rem;
+      border-radius: var(--radius-xl);
+      font-family: 'Inter', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      box-shadow: var(--shadow-2xl);
+      backdrop-filter: blur(20px);
+      border: 3px solid transparent;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .prediction-result.big {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.1));
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.5);
+      text-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+      box-shadow: var(--shadow-2xl), 0 0 40px rgba(16, 185, 129, 0.4);
+    }
+    
+    .prediction-result.small {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.5);
+      text-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+      box-shadow: var(--shadow-2xl), 0 0 40px rgba(239, 68, 68, 0.4);
+    }
+    
+    .prediction-result::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-xl);
+      padding: 3px;
+      background: linear-gradient(135deg, currentColor, transparent, currentColor);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: borderRotate 4s linear infinite;
+    }
+    
+    @keyframes borderRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes flipIn {
+      0% { 
+        transform: rotateX(90deg) scale(0.8); 
+        opacity: 0; 
+      }
+      100% { 
+        transform: rotateX(0) scale(1); 
+        opacity: 1; 
+      }
+    }
+    
+    .flip-in {
+      animation: flipIn 0.8s cubic-bezier(0.68, -0.6, 0.32, 1.6) forwards;
+    }
+    
+    /* Status Indicators */
+    .status-section {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(145deg, rgba(30, 30, 63, 0.8), rgba(42, 42, 90, 0.8));
+      border: 2px solid var(--border-secondary);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: var(--transition-normal);
+      backdrop-filter: blur(15px);
+      min-width: 140px;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .status-indicator:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .status-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 0 0 20px currentColor;
+    }
+    
+    .status-dot::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: currentColor;
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes statusPulse {
+      0%, 100% { 
+        transform: scale(1); 
+        opacity: 0.8; 
+      }
+      50% { 
+        transform: scale(1.4); 
+        opacity: 0.3; 
+      }
+    }
+    
+    .status-big {
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-small {
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Lottery Section */
+    #lottery-content {
+      display: none;
+      text-align: center;
+    }
+    
+    .lottery-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .lottery-iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-2xl), var(--glow-primary);
+      margin-bottom: 2rem;
+      background: var(--bg-surface);
+    }
+    
+    /* Animated Footer */
+    .animated-footer {
+      margin-top: 3rem;
+      text-align: center;
+      position: relative;
+      padding-top: 2rem;
+    }
+    
+    .animated-footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary), 
+        var(--secondary), 
+        var(--accent), 
+        transparent
+      );
+      animation: footerGlow 3s linear infinite;
+    }
+    
+    @keyframes footerGlow {
+      0% { transform: translateX(-50%) scaleX(0); }
+      50% { transform: translateX(-50%) scaleX(1); }
+      100% { transform: translateX(-50%) scaleX(0); }
+    }
+    
+    .credit-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, 
+        var(--primary) 0%, 
+        var(--secondary) 25%, 
+        var(--accent) 50%, 
+        var(--primary-light) 75%, 
+        var(--primary) 100%
+      );
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textGradient 4s ease-in-out infinite;
+      position: relative;
+    }
+    
+    @keyframes textGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    .credit-text::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      animation: underlineExpand 3s ease-in-out infinite;
+    }
+    
+    @keyframes underlineExpand {
+      0%, 100% { width: 0; }
+      50% { width: 100%; }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .card {
+        padding: 2rem;
+        margin: 0.5rem;
+      }
+      
+      .logo-container {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .logo-container i {
+        font-size: 2rem;
+      }
+      
+      .main-title {
+        font-size: 1.8rem;
+      }
+      
+      .clock-display {
+        font-size: 1.6rem;
+      }
+      
+      .prediction-result {
+        font-size: 2.8rem;
+        padding: 2.5rem 1.5rem;
+      }
+      
+      .status-section {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+      }
+      
+      .time-container {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .nav-section {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .lottery-iframe {
+        height: 500px;
+      }
+      
+      .period-value {
+        font-size: 1.3rem;
+      }
+    }
+    
+    @media (max-width: 360px) {
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .prediction-result {
+        font-size: 2.2rem;
+        padding: 2rem 1rem;
+      }
+      
+      .lottery-iframe {
+        height: 450px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Particles -->
+  <div class="floating-particles">
+    <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+    <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
+    <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
+  </div>
+
+  <div class="main-container">
+    <!-- Login Page -->
+    <div class="card" id="login-page">
+      <div class="premium-badge">
+        <i class="fas fa-crown"></i> PREMIUM
+      </div>
+      
+      <div class="logo-section">
+        <div class="logo-container">
+          <i class="fas fa-gem"></i>
+        </div>
+        <h1 class="main-title">AI PERDITION V2.2</h1>
+        <div class="subtitle">Neural Access Portal</div>
+      </div>
+      
+      <div class="input-group">
+        <div class="input-label">Premium Access Key</div>
+        <input type="text" id="keyInput" class="premium-input" placeholder="KEY-XXXXXX">
+      </div>
+      
+      <button class="premium-button" onclick="activateKey()">
+        <i class="fas fa-key"></i> Activate Premium Access
+      </button>
+      
+      <div class="button-group">
+        <a href="https://t.me/PGMONEY67800" target="_blank" class="social-button telegram">
+          <i class="fab fa-telegram"></i> Official Channel
+        </a>
+        <a href="https://t.me/pgmoney2_67800" target="_blank" class="social-button telegram">
+          <i class="fab fa-telegram"></i> Channel 2
+        </a>
+        <a href="https://t.me/Paunggyi111" target="_blank" class="social-button key-button">
+          <i class="fas fa-key"></i> Get Premium Key
+        </a>
+      </div>
+      
+      <div id="timer" class="timer-display"></div>
+      
+      <div id="content" class="success-content">
+        <div class="success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3 style="margin-bottom: 1rem; color: var(--success);">Premium Access Unlocked!</h3>
+        <p style="margin-bottom: 2rem; color: var(--text-secondary);">Welcome to AI Perdition V2.2</p>
+        <button class="premium-button" onclick="showPredictionPage()" style="width: auto; padding: 1rem 2rem;">
+          Enter Prediction Portal <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      
+      <div class="animated-footer">
+        <div class="credit-text">CRD BY PYAUNGGYI</div>
+      </div>
+    </div>
+
+    <!-- Prediction Page -->
+    <div class="card" id="prediction-page">
+      <div class="premium-badge">
+        <i class="fas fa-crown"></i> PREMIUM
+      </div>
+      
+      <div class="logo-section">
+        <div class="logo-container">
+          <i class="fas fa-brain"></i>
+        </div>
+        <h1 class="main-title">AI PERDITION V2.2</h1>
+        <div class="subtitle">Neural Network Active</div>
+      </div>
+      
+      <div class="nav-section">
+        <button class="nav-button active" onclick="showAiPrediction()">
+          <i class="fas fa-robot"></i> AI Prediction
+        </button>
+        <button class="nav-button" onclick="showLotterySite()">
+          <i class="fas fa-external-link-alt"></i> CK Lottery
+        </button>
+      </div>
+      
+      <div id="ai-content">
+        <div class="premium-box">
+          <div class="premium-label">Current Period</div>
+          <div class="period-value" id="period">--------</div>
+        </div>
+        
+        <div class="time-container">
+          <div class="clock-display" id="clock">--:--:--</div>
+          <div class="timer-box" id="prediction-timer">
+            <i class="fas fa-clock"></i> Next: 00:30
+          </div>
+        </div>
+        
+        <div class="prediction-container">
+          <div class="premium-box" style="margin-bottom: 0;">
+            <div class="premium-label">AI Prediction</div>
+            <div class="prediction-result" id="result">--</div>
+          </div>
+        </div>
+        
+        <div class="status-section">
+          <div class="status-indicator status-big">
+            <div class="status-dot"></div>
+            <span>BIG</span>
+          </div>
+          <div class="status-indicator status-small">
+            <div class="status-dot"></div>
+            <span>SMALL</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="lottery-content">
+        <h2 class="lottery-title">CK Lottery Official Platform</h2>
+        <iframe src="http://www.cklottery.info/#/register?invitationCode=81487219676" class="lottery-iframe"></iframe>
+        <button class="premium-button" onclick="showAiPrediction()" style="width: auto; padding: 1rem 2rem;">
+          <i class="fas fa-arrow-left"></i> Back to AI Prediction
+        </button>
+      </div>
+      
+      <div class="animated-footer">
+        <div class="credit-text">CRD BY PYAUNGGYI</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAy3QvFmhKiOX38MZiINfZq2yYXGhb7uL8",
+      authDomain: "ck-adm.firebaseapp.com",
+      databaseURL: "https://ck-adm-default-rtdb.europe-west1.firebasedatabase.app/",
+      projectId: "ck-adm",
+      storageBucket: "ck-adm.appspot.com",
+      messagingSenderId: "192822942347",
+      appId: "1:192822942347:web:f27eee393e16c84544528e"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Global Variables
+    let expireTime = parseInt(localStorage.getItem('expireTime')) || 0;
+    let timerInterval;
+    let predictionInterval;
+    let lastPeriodIndex = -1;
+    let lastResult = null;
+
+    // Helper Functions
+    const pad = (n, w = 2) => String(n).padStart(w, '0');
+
+    // Myanmar Time (UTC+6:30)
+    const getMMTime = () => {
+      const now = new Date();
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      return new Date(utc + 6.5 * 60 * 60 * 1000);
+    };
+
+    // Period Number Generation
+    const REFERENCE_TIME = "2025-06-19T16:38:30+06:30";
+    const REFERENCE_SUFFIX = 51217;
+    const SLOT_SECONDS = 30;
+
+    const BASE_INDEX = (() => {
+      const refDate = new Date(REFERENCE_TIME);
+      const start = new Date(refDate);
+      start.setHours(0, 0, 0, 0);
+      const refSecs = Math.floor((refDate - start) / 1000);
+      return REFERENCE_SUFFIX - Math.floor(refSecs / SLOT_SECONDS) + 1;
+    })();
+
+    function getCurrentPeriod() {
+      const now = getMMTime();
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      const secs = Math.floor((now - start) / 1000);
+      const slotIndex = Math.floor(secs / SLOT_SECONDS);
+      const suffix = pad(BASE_INDEX + slotIndex, 5);
+      return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}1000${suffix}`;
+    }
+
+    // Prediction Pattern
+    const predictionPattern = `Big Small Small Big Small Small Small Big  
+Big Big Small Small Big Small Small Big  
+Small Small Big Big Small Big Small Small  
+Big Small Big Small Small Big Small Big  
+Small Big Small Big Small Small Big Small  
+Small Big Big Small Big Small Small Big  
+Big Small Big Big Small Small Big Small  
+Small Small Small Big Big Small Big Small  
+Big Big Small Big Small Big Small Big  
+Small Big Small Small Big Big Small Big  
+Big Small Small Small Big Big Big Small  
+Small Small Big Small Big Big Small Big  
+Big Big Small Small Small Big Small Big  
+Small Small Small Big Small Big Big Small  
+Big Small Big Small Big Small Big Small  
+Small Big Small Big Small Big Small Small  
+Big Small Big Big Small Small Small Big  
+Big Big Small Small Big Big Small Small  
+Small Big Big Small Small Big Small Big  
+Big Small Small Big Small Big Small Small  
+Small Big Small Big Big Big Small Big  
+Big Small Small Big Big Small Small Big  
+Small Small Big Small Big Big Small Big  
+Big Big Small Big Small Big Small Big  
+Small Small Small Big Big Small Small Big  
+Big Small Big Small Big Small Big Big  
+Small Big Small Big Small Big Small Small  
+Big Big Small Small Big Big Small Big  
+Small Small Small Big Big Small Small Big  
+Big Small Big Small Big Small Big Big  
+Small Big Small Big Big Big Small Big  
+Big Small Small Big Big Small Small Big  
+Small Small Big Small Big Big Small Big  
+Big Big Small Small Big Small Small Small  
+Small Big Small Big Small Big Big Big`.split(/\s+/).filter(word => word);
+
+    // Login Page Functions
+    function activateKey() {
+      const key = document.getElementById('keyInput').value.trim().toUpperCase();
+      if (!key) {
+        alert("Please enter a key");
+        return;
+      }
+      
+      // Show loading state
+      const btn = document.querySelector('#login-page .premium-button');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Access...';
+      btn.disabled = true;
+      
+      db.ref('keys/' + key).once('value').then(snapshot => {
+        btn.innerHTML = '<i class="fas fa-key"></i> Activate Premium Access';
+        btn.disabled = false;
+        
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          if (data.used) { 
+            alert("❌ This key is already used!"); 
+            return; 
+          }
+          
+          const extraTime = data.duration * 60 * 1000;
+          expireTime = Math.max(Date.now(), expireTime) + extraTime;
+          localStorage.setItem('expireTime', expireTime);
+          db.ref('keys/' + key).update({ used: true });
+          
+          // Show success
+          document.getElementById('content').style.display = 'block';
+          alert(`✅ Premium Access Activated! Added ${data.duration} minutes`);
+          startSession();
+        } else {
+          alert("❌ Invalid Access Key");
+        }
+      }).catch(error => {
+        btn.innerHTML = '<i class="fas fa-key"></i> Activate Premium Access';
+        btn.disabled = false;
+        alert("⚠️ Connection error. Please try again.");
+        console.error(error);
+      });
+    }
+
+    function startSession() {
+      if (timerInterval) clearInterval(timerInterval);
+      updateTimer();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      const now = Date.now();
+      const remaining = expireTime - now;
+      
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer').textContent = "Premium access expired";
+        document.getElementById('content').style.display = 'none';
+        localStorage.removeItem('expireTime');
+        return;
+      }
+      
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+      
+      document.getElementById('timer').textContent = 
+        `Premium expires in: ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function showPredictionPage() {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('prediction-page').style.display = 'block';
+      startPrediction();
+    }
+
+    // Navigation Functions
+    function showAiPrediction() {
+      document.getElementById('ai-content').style.display = 'block';
+      document.getElementById('lottery-content').style.display = 'none';
+      
+      // Update active button state
+      const navButtons = document.querySelectorAll('.nav-button');
+      navButtons[0].classList.add('active');
+      navButtons[1].classList.remove('active');
+      
+      // Restart prediction if not running
+      if (!predictionInterval) {
+        startPrediction();
+      }
+    }
+
+    function showLotterySite() {
+      document.getElementById('ai-content').style.display = 'none';
+      document.getElementById('lottery-content').style.display = 'block';
+      
+      // Update active button state
+      const navButtons = document.querySelectorAll('.nav-button');
+      navButtons[0].classList.remove('active');
+      navButtons[1].classList.add('active');
+      
+      // Stop prediction timer when on lottery page
+      if (predictionInterval) {
+        clearInterval(predictionInterval);
+        predictionInterval = null;
+      }
+    }
+
+    // Prediction Page Functions
+    function buildPeriod(now) {
+      const period = getCurrentPeriod();
+      document.getElementById('period').textContent = period;
+
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      const secs = Math.floor((now - start) / 1000);
+      const pIndex = Math.floor(secs / 30);
+
+      if (pIndex !== lastPeriodIndex) {
+        lastPeriodIndex = pIndex;
+        const outcome = predictionPattern[pIndex % predictionPattern.length];
+        const resEl = document.getElementById('result');
+        
+        // Add flip animation when result changes
+        if (lastResult && lastResult !== outcome) {
+          resEl.classList.remove('flip-in');
+          void resEl.offsetWidth; // Trigger reflow
+          resEl.classList.add('flip-in');
+        }
+        
+        lastResult = outcome;
+        resEl.textContent = outcome;
+        resEl.className = `prediction-result ${outcome.toLowerCase()} flip-in`;
+      }
+    }
+
+    function predictionTick() {
+      const now = getMMTime();
+      const timeStr = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }).toUpperCase();
+      
+      document.getElementById('clock').textContent = timeStr;
+      const secs = now.getSeconds();
+      const remain = 30 - (secs % 30);
+      
+      const timerEl = document.getElementById('prediction-timer');
+      timerEl.innerHTML = `<i class="fas fa-clock"></i> Next: 00:${pad(remain)}`;
+      
+      if (remain <= 5) {
+        timerEl.style.color = 'var(--accent)';
+        timerEl.style.fontWeight = '700';
+        timerEl.style.transform = 'scale(1.05)';
+      } else {
+        timerEl.style.color = '';
+        timerEl.style.fontWeight = '';
+        timerEl.style.transform = '';
+      }
+      
+      if (secs % 30 === 0) buildPeriod(now);
+    }
+
+    function startPrediction() {
+      // Initialize
+      buildPeriod(getMMTime());
+      if (predictionInterval) clearInterval(predictionInterval);
+      predictionInterval = setInterval(predictionTick, 1000);
+      
+      // Also check session time
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const now = Date.now();
+        if (expireTime <= now) {
+          alert("Your premium session has expired. Redirecting to login...");
+          document.getElementById('prediction-page').style.display = 'none';
+          document.getElementById('login-page').style.display = 'block';
+          clearInterval(timerInterval);
+          clearInterval(predictionInterval);
+        }
+      }, 1000);
+    }
+
+    // Initialize
+    if (expireTime && Date.now() < expireTime) {
+      // If session is active, show prediction page directly
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('prediction-page').style.display = 'block';
+      startPrediction();
+    } else {
+      // Otherwise show login page
+      startSession();
+    }
+
+    // Add dynamic particles
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 6 + 's';
+      particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+      document.querySelector('.floating-particles').appendChild(particle);
+      
+      setTimeout(() => {
+        particle.remove();
+      }, 10000);
+    }
+
+    // Create particles continuously
+    setInterval(createParticle, 1000);
+  </script>
+</body>
+</html>
